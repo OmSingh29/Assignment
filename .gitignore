@@ -5,6 +5,9 @@ __pycache__/
 # SQLite DB
 *.sqlite3
 
+#env
+.env
+
 # Virtual environments
 backend/truestate/
 venv/
