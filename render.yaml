@@ -12,8 +12,9 @@ services:
       cd ..
       python backend/src/manage.py collectstatic --noinput
     startCommand: |
-      python backend/src/manage.py migrate --noinput
-      gunicorn core.wsgi:application --chdir backend/src --bind 0.0.0.0:$PORT
+      cd backend/src
+      python manage.py migrate --noinput
+      gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: core.settings
