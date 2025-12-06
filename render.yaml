@@ -4,17 +4,15 @@ services:
     env: python
     region: singapore
     plan: free
-
     buildCommand: |
       cd frontend
       npm install
       npm run build
       cd ..
       pip install -r requirements.txt
+      python backend/src/manage.py migrate --noinput
       python backend/src/manage.py collectstatic --noinput
-
     startCommand: gunicorn core.wsgi:application --chdir backend/src --bind 0.0.0.0:$PORT
-
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: core.settings
