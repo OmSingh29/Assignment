@@ -1,0 +1,14 @@
+{
+  "name": "truestate-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tailwindcss -i ./src/styles/input.css -o ../backend/src/static/css/main.css --minify",
+    "watch": "tailwindcss -i ./src/styles/input.css -o ../backend/src/static/css/main.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8.4.0",
+    "autoprefixer": "^10.4.0"
+  }
+}

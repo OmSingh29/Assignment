@@ -1,0 +1,239 @@
+{% extends "sales/base.html" %}
+
+{% block content %}
+<form method="get" class="space-y-4">
+  <!-- Top bar: search + sort + apply -->
+  <div class="flex flex-col md:flex-row gap-4 items-start md:items-end">
+    <!-- Search -->
+    <div class="flex-1">
+      <label class="block text-sm font-medium mb-1">Search</label>
+      <input
+        type="text"
+        name="q"
+        value="{{ search_query }}"
+        placeholder="Search by customer name or phone"
+        class="w-full rounded-md bg-slate-900 border border-slate-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      />
+    </div>
+
+    <!-- Sort -->
+    <div>
+      <label class="block text-sm font-medium mb-1">Sort by</label>
+      <select
+        name="sort"
+        class="rounded-md bg-slate-900 border border-slate-700 px-3 py-2 text-sm"
+      >
+        <option value="date_desc" {% if sort_by == "date_desc" %}selected{% endif %}>
+          Date (Newest first)
+        </option>
+        <option value="quantity" {% if sort_by == "quantity" %}selected{% endif %}>
+          Quantity
+        </option>
+        <option value="name" {% if sort_by == "name" %}selected{% endif %}>
+          Customer Name (A–Z)
+        </option>
+      </select>
+    </div>
+
+    <!-- Apply button -->
+    <div>
+      <button
+        type="submit"
+        class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium hover:bg-indigo-500"
+      >
+        Apply
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters panel -->
+  <div class="grid md:grid-cols-3 gap-4 pt-4 border-t border-slate-800 mt-4">
+    <!-- Region -->
+    <div>
+      <label class="block text-xs font-semibold mb-1 uppercase tracking-wide"
+        >Customer Region</label
+      >
+      <input
+        type="text"
+        name="region"
+        value="{{ request.GET.region }}"
+        placeholder="e.g. North, South"
+        class="w-full rounded-md bg-slate-900 border border-slate-700 px-3 py-1.5 text-xs"
+      />
+    </div>
+
+    <!-- Gender -->
+    <div>
+      <label class="block text-xs font-semibold mb-1 uppercase tracking-wide"
+        >Gender</label
+      >
+      <select
+        name="gender"
+        class="w-full rounded-md bg-slate-900 border border-slate-700 px-3 py-1.5 text-xs"
+      >
+        <option value="">Any</option>
+        <option value="Male" {% if request.GET.gender == "Male" %}selected{% endif %}
+          >Male</option
+        >
+        <option value="Female" {% if request.GET.gender == "Female" %}selected{% endif %}
+          >Female</option
+        >
+      </select>
+    </div>
+
+    <!-- Age range -->
+    <div class="flex gap-2">
+      <div class="flex-1">
+        <label class="block text-xs font-semibold mb-1 uppercase tracking-wide"
+          >Age min</label
+        >
+        <input
+          type="number"
+          name="age_min"
+          value="{{ request.GET.age_min }}"
+          class="w-full rounded-md bg-slate-900 border border-slate-700 px-3 py-1.5 text-xs"
+        />
+      </div>
+      <div class="flex-1">
+        <label class="block text-xs font-semibold mb-1 uppercase tracking-wide"
+          >Age max</label
+        >
+        <input
+          type="number"
+          name="age_max"
+          value="{{ request.GET.age_max }}"
+          class="w-full rounded-md bg-slate-900 border border-slate-700 px-3 py-1.5 text-xs"
+        />
+      </div>
+    </div>
+
+    <!-- Product category -->
+    <div>
+      <label class="block text-xs font-semibold mb-1 uppercase tracking-wide"
+        >Product Category</label
+      >
+      <input
+        type="text"
+        name="category"
+        value="{{ request.GET.category }}"
+        class="w-full rounded-md bg-slate-900 border border-slate-700 px-3 py-1.5 text-xs"
+      />
+    </div>
+
+    <!-- Tags -->
+    <div>
+      <label class="block text-xs font-semibold mb-1 uppercase tracking-wide"
+        >Tags (comma separated)</label
+      >
+      <input
+        type="text"
+        name="tags"
+        value="{{ request.GET.tags }}"
+        class="w-full rounded-md bg-slate-900 border border-slate-700 px-3 py-1.5 text-xs"
+      />
+    </div>
+
+    <!-- Payment method -->
+    <div>
+      <label class="block text-xs font-semibold mb-1 uppercase tracking-wide"
+        >Payment Method</label
+      >
+      <input
+        type="text"
+        name="payment_method"
+        value="{{ request.GET.payment_method }}"
+        class="w-full rounded-md bg-slate-900 border border-slate-700 px-3 py-1.5 text-xs"
+      />
+    </div>
+
+    <!-- Date range -->
+    <div>
+      <label class="block text-xs font-semibold mb-1 uppercase tracking-wide"
+        >Date From</label
+      >
+      <input
+        type="date"
+        name="date_from"
+        value="{{ request.GET.date_from }}"
+        class="w-full rounded-md bg-slate-900 border border-slate-700 px-3 py-1.5 text-xs"
+      />
+    </div>
+    <div>
+      <label class="block text-xs font-semibold mb-1 uppercase tracking-wide"
+        >Date To</label
+      >
+      <input
+        type="date"
+        name="date_to"
+        value="{{ request.GET.date_to }}"
+        class="w-full rounded-md bg-slate-900 border border-slate-700 px-3 py-1.5 text-xs"
+      />
+    </div>
+  </div>
+</form>
+
+<!-- Results table -->
+<div class="mt-6 bg-slate-900/70 border border-slate-800 rounded-xl overflow-hidden">
+  <table class="min-w-full text-xs">
+    <thead class="bg-slate-900/90 border-b border-slate-800">
+      <tr class="text-left">
+        <th class="px-3 py-2 font-semibold">Date</th>
+        <th class="px-3 py-2 font-semibold">Customer</th>
+        <th class="px-3 py-2 font-semibold">Phone</th>
+        <th class="px-3 py-2 font-semibold">Region</th>
+        <th class="px-3 py-2 font-semibold">Product</th>
+        <th class="px-3 py-2 font-semibold text-right">Qty</th>
+        <th class="px-3 py-2 font-semibold text-right">Final Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if page_obj.object_list %}
+        {% for sale in page_obj.object_list %}
+          <tr class="border-t border-slate-800/60 hover:bg-slate-800/60">
+            <td class="px-3 py-2 whitespace-nowrap">{{ sale.date }}</td>
+            <td class="px-3 py-2">{{ sale.customer_name }}</td>
+            <td class="px-3 py-2">{{ sale.phone_number }}</td>
+            <td class="px-3 py-2">{{ sale.customer_region }}</td>
+            <td class="px-3 py-2">{{ sale.product_name }}</td>
+            <td class="px-3 py-2 text-right">{{ sale.quantity }}</td>
+            <td class="px-3 py-2 text-right">{{ sale.final_amount }}</td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="7" class="px-3 py-6 text-center text-sm text-slate-400">
+            No results found. Try changing search or filters.
+          </td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+<div class="mt-4 flex items-center justify-between text-xs text-slate-400">
+  <div>
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+  </div>
+  <div class="space-x-2">
+    {% if page_obj.has_previous %}
+      <a
+        href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}
+              {% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}
+              page={{ page_obj.previous_page_number }}"
+        class="px-3 py-1 border border-slate-700 rounded-md"
+        >Previous</a
+      >
+    {% endif %}
+    {% if page_obj.has_next %}
+      <a
+        href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}
+              {% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}
+              page={{ page_obj.next_page_number }}"
+        class="px-3 py-1 border border-slate-700 rounded-md"
+        >Next</a
+      >
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
