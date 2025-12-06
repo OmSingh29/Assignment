@@ -5,17 +5,11 @@ __pycache__/
 # SQLite DB
 *.sqlite3
 
-# Django static collection output (Render generates this)
-staticfiles/
-
 # Virtual environments
 backend/truestate/
 venv/
 .env/
 .venv/
-
-# Tailwind output (Django serves it from static/)
-backend/src/static/css/main.css
 
 # Node modules
 frontend/node_modules/
