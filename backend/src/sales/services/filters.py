@@ -11,9 +11,9 @@ def _parse_int(value, default=None):
 def _parse_multi(params, key):
     """
     Reads key from request.GET (a QueryDict) and supports *both*:
-      - ?key=North&key=South
-      - ?key=North,South
-    Returns a flat list like ["North", "South"].
+    - ?key=North&key=South
+    - ?key=North,South
+    Returns ["North", "South"] in both cases.
     """
     raw_list = params.getlist(key)
     result = []
@@ -33,19 +33,21 @@ def apply_filters(queryset, params):
     genders = _parse_multi(params, "gender")
     categories = _parse_multi(params, "category")
     payment_methods = _parse_multi(params, "payment_method")
-    tag_values = _parse_multi(params, "tags")  # from checkboxes / multi-select
 
-    # numeric range
+    # age
     age_min = _parse_int(params.get("age_min"))
     age_max = _parse_int(params.get("age_max"))
 
-    # swap invalid age ranges silently
+    # swap invalid age ranges
     if age_min is not None and age_max is not None and age_min > age_max:
         age_min, age_max = age_max, age_min
 
-    # date range
+    # dates
     date_from = params.get("date_from")
     date_to = params.get("date_to")
+
+    # tags from multi-select / chips => name="tags"
+    tag_values = _parse_multi(params, "tags")
 
     # apply filters
     if regions:

@@ -2,14 +2,12 @@ from django.core.paginator import Paginator
 from django.shortcuts import render
 from .models import Sale
 from .services.search import apply_search
-from .services.filters import apply_filters, _parse_multi
+from .services.filters import apply_filters
 from .services.sorting import apply_sorting
 
 
 def sales_list(request):
-    # Base queryset (used for both options + data)
-    base_qs = Sale.objects.all()
-    qs = base_qs
+    qs = Sale.objects.all()
 
     # --- search ---
     search_query = request.GET.get("q", "").strip()
@@ -27,48 +25,69 @@ def sales_list(request):
     page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
 
-    # ---------- dropdown options (distinct values) ----------
-    region_options = (
-        base_qs.exclude(customer_region="")
+    # ---------- filter options from DB ----------
+    # Distinct regions
+    regions_qs = (
+        Sale.objects.order_by()
         .values_list("customer_region", flat=True)
+        .exclude(customer_region__isnull=True)
+        .exclude(customer_region="")
         .distinct()
-        .order_by("customer_region")
     )
+    available_regions = sorted(set(regions_qs))
 
-    gender_options = (
-        base_qs.exclude(gender="")
+    # Distinct genders
+    genders_qs = (
+        Sale.objects.order_by()
         .values_list("gender", flat=True)
+        .exclude(gender__isnull=True)
+        .exclude(gender="")
         .distinct()
-        .order_by("gender")
     )
+    available_genders = sorted(set(genders_qs))
 
-    category_options = (
-        base_qs.exclude(product_category="")
+    # Distinct categories
+    categories_qs = (
+        Sale.objects.order_by()
         .values_list("product_category", flat=True)
+        .exclude(product_category__isnull=True)
+        .exclude(product_category="")
         .distinct()
-        .order_by("product_category")
     )
+    available_categories = sorted(set(categories_qs))
 
-    payment_method_options = (
-        base_qs.exclude(payment_method="")
+    # Distinct payment methods
+    payment_qs = (
+        Sale.objects.order_by()
         .values_list("payment_method", flat=True)
+        .exclude(payment_method__isnull=True)
+        .exclude(payment_method="")
         .distinct()
-        .order_by("payment_method")
     )
+    available_payment_methods = sorted(set(payment_qs))
 
-    tag_options = (
-        base_qs.exclude(tags="")
+    # Distinct tags (split comma-separated values into individual tags)
+    raw_tags_qs = (
+        Sale.objects.order_by()
         .values_list("tags", flat=True)
+        .exclude(tags__isnull=True)
+        .exclude(tags="")
         .distinct()
-        .order_by("tags")
     )
+    tag_set = set()
+    for tag_string in raw_tags_qs:
+        for part in tag_string.split(","):
+            label = part.strip()
+            if label:
+                tag_set.add(label)
+    available_tags = sorted(tag_set)
 
-    # ---------- currently selected values (for keeping state) ----------
-    selected_regions = _parse_multi(request.GET, "region")
-    selected_genders = _parse_multi(request.GET, "gender")
-    selected_categories = _parse_multi(request.GET, "category")
-    selected_payment_methods = _parse_multi(request.GET, "payment_method")
-    selected_tags = _parse_multi(request.GET, "tags")
+    # ---------- which filters are currently selected (for checked boxes + labels) ----------
+    selected_regions = request.GET.getlist("region")
+    selected_genders = request.GET.getlist("gender")
+    selected_categories = request.GET.getlist("category")
+    selected_payment_methods = request.GET.getlist("payment_method")
+    selected_tags = request.GET.getlist("tags")
 
     context = {
         "page_obj": page_obj,
@@ -77,13 +96,13 @@ def sales_list(request):
         "request": request,  # for reading GET params in template
 
         # dropdown options
-        "region_options": region_options,
-        "gender_options": gender_options,
-        "category_options": category_options,
-        "payment_method_options": payment_method_options,
-        "tag_options": tag_options,
+        "available_regions": available_regions,
+        "available_genders": available_genders,
+        "available_categories": available_categories,
+        "available_payment_methods": available_payment_methods,
+        "available_tags": available_tags,
 
-        # selected lists (to mark <option selected>)
+        # selected values
         "selected_regions": selected_regions,
         "selected_genders": selected_genders,
         "selected_categories": selected_categories,
