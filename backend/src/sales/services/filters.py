@@ -1,3 +1,6 @@
+from django.db.models import Q
+
+
 def _parse_int(value, default=None):
     try:
         return int(value)
@@ -5,48 +8,46 @@ def _parse_int(value, default=None):
         return default
 
 
-def _clean_multi(values):
+def _parse_multi(params, key):
     """
-    Remove empty strings from multi-select lists like ["", "North"] -> ["North"].
+    Reads key from request.GET (a QueryDict) and supports *both*:
+      - ?key=North&key=South
+      - ?key=North,South
+    Returns a flat list like ["North", "South"].
     """
-    return [v for v in values if v]
+    raw_list = params.getlist(key)
+    result = []
+    for raw in raw_list:
+        if not raw:
+            continue
+        parts = [p.strip() for p in raw.split(",")]
+        for p in parts:
+            if p:
+                result.append(p)
+    return result
 
 
 def apply_filters(queryset, params):
-    """
-    params is request.GET (a QueryDict).
-    Supports:
-      - region (multi)
-      - gender (multi)
-      - category (multi)
-      - payment_method (multi)
-      - age_min / age_max
-      - date_from / date_to
-      - tag(s) (single text: partial match in tags field)
-    """
+    # multi-select fields
+    regions = _parse_multi(params, "region")
+    genders = _parse_multi(params, "gender")
+    categories = _parse_multi(params, "category")
+    payment_methods = _parse_multi(params, "payment_method")
+    tag_values = _parse_multi(params, "tags")  # from checkboxes / multi-select
 
-    regions = _clean_multi(params.getlist("region"))
-    genders = _clean_multi(params.getlist("gender"))
-    categories = _clean_multi(params.getlist("category"))
-    payment_methods = _clean_multi(params.getlist("payment_method"))
-
+    # numeric range
     age_min = _parse_int(params.get("age_min"))
     age_max = _parse_int(params.get("age_max"))
 
-    # If both present but reversed, silently swap -> handles invalid numeric ranges
+    # swap invalid age ranges silently
     if age_min is not None and age_max is not None and age_min > age_max:
         age_min, age_max = age_max, age_min
 
-    date_from = params.get("date_from") or None
-    date_to = params.get("date_to") or None
+    # date range
+    date_from = params.get("date_from")
+    date_to = params.get("date_to")
 
-    # Support both `tag` and `tags` query params
-    tag = params.get("tag") or params.get("tags")
-    if tag is not None:
-        tag = tag.strip()
-        if not tag:
-            tag = None
-
+    # apply filters
     if regions:
         queryset = queryset.filter(customer_region__in=regions)
 
@@ -71,7 +72,10 @@ def apply_filters(queryset, params):
     if date_to:
         queryset = queryset.filter(date__lte=date_to)
 
-    if tag:
-        queryset = queryset.filter(tags__icontains=tag)
+    if tag_values:
+        q = Q()
+        for t in tag_values:
+            q |= Q(tags__icontains=t)
+        queryset = queryset.filter(q)
 
     return queryset

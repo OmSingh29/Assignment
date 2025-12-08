@@ -5,25 +5,74 @@
     <meta charset="utf-8" />
     <title>Retail Sales – TruEstate</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <!-- Load compiled Tailwind CSS -->
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
   </head>
 
   <body class="bg-slate-950 text-slate-100 min-h-screen">
+    <div class="min-h-screen flex bg-slate-950">
+      <!-- Left sidebar -->
+      <aside class="hidden md:flex md:flex-col w-64 border-r border-slate-800 bg-slate-950/80">
+        <div class="h-16 flex items-center px-6 border-b border-slate-800">
+          <span class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-500 text-xs font-bold">
+            RS
+          </span>
+          <div class="ml-3">
+            <p class="text-sm font-semibold leading-tight">Retail Sales</p>
+            <p class="text-[11px] text-slate-400 leading-tight">Management System</p>
+          </div>
+        </div>
 
-    <header class="border-b border-slate-800 bg-slate-900/70 backdrop-blur">
-      <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-        <h1 class="text-xl font-semibold tracking-tight">
-          Retail Sales Management – Om Singh
-        </h1>
+        <nav class="flex-1 px-3 py-4 space-y-1 text-sm">
+          <a href="#"
+             class="flex items-center px-3 py-2 rounded-lg bg-slate-900 text-slate-50">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-3"></span>
+            Dashboard
+          </a>
+          <a href="#"
+             class="flex items-center px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-900/70 hover:text-slate-100">
+            Sales
+          </a>
+          <a href="#"
+             class="flex items-center px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-900/70 hover:text-slate-100">
+            Customers
+          </a>
+          <a href="#"
+             class="flex items-center px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-900/70 hover:text-slate-100">
+            Reports
+          </a>
+        </nav>
+
+        <div class="px-4 py-4 border-t border-slate-800 text-[11px] text-slate-500">
+          Logged in as <span class="text-slate-200 font-medium">Om Singh</span>
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <div class="flex-1 flex flex-col">
+        <header class="h-16 border-b border-slate-800 bg-slate-900/70 backdrop-blur">
+          <div class="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+            <div>
+              <h1 class="text-base sm:text-lg font-semibold tracking-tight">
+                Sales Management System
+              </h1>
+              <p class="text-xs text-slate-400 mt-0.5">
+                Retail Sales Dashboard – Om Singh
+              </p>
+            </div>
+            <div class="hidden sm:flex -space-x-2">
+              <span class="h-7 w-7 rounded-full border border-slate-900 bg-pink-500/80 text-[11px] flex items-center justify-center">M</span>
+              <span class="h-7 w-7 rounded-full border border-slate-900 bg-emerald-500/80 text-[11px] flex items-center justify-center">R</span>
+              <span class="h-7 w-7 rounded-full border border-slate-900 bg-sky-500/80 text-[11px] flex items-center justify-center">S</span>
+            </div>
+          </div>
+        </header>
+
+        <main class="flex-1">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            {% block content %}{% endblock %}
+          </div>
+        </main>
       </div>
-    </header>
-
-    <main class="max-w-6xl mx-auto px-4 py-6">
-      {% block content %}
-      {% endblock %}
-    </main>
-
+    </div>
   </body>
 </html>
